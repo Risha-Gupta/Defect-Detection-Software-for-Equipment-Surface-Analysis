@@ -75,3 +75,95 @@ val_pics = val_data_prep.flow_from_directory(
 print(f"Training samples: {train_pics.samples}")      # Total number of training images
 print(f"Validation samples: {val_pics.samples}")     # Total number of validation images
 print(f"Class indices: {train_pics.class_indices}")   # Mapping of class names to indices
+
+
+# Create a Sequential model (layers stacked one after another)
+complex_model = Sequential()
+
+# First convolutional block - detect basic features
+complex_model.add(Conv2D(
+    32,                           # Number of filters (feature detectors)
+    (3, 3),                      # Filter size (3x3 kernel)
+    activation='relu',           # ReLU activation function
+    input_shape=(pic_height, pic_width, color_channels),  # Input image dimensions
+    padding='same'               # Keep same spatial dimensions
+))
+complex_model.add(BatchNormalization())  # Normalize inputs to improve training stability
+complex_model.add(MaxPooling2D(2, 2))    # Max pooling with 2x2 pool size to reduce dimensions
+
+# Second convolutional block - detect more complex patterns
+complex_model.add(Conv2D(
+    64,                          # Increase number of filters to 64
+    (3, 3),                      # 3x3 kernel size
+    activation='relu',           # ReLU activation function
+    padding='same'               # Keep same spatial dimensions
+))
+complex_model.add(BatchNormalization())  # Batch normalization for better training
+complex_model.add(MaxPooling2D(2, 2))    # Max pooling to further reduce dimensions
+
+# Third convolutional block - detect higher-level features
+complex_model.add(Conv2D(
+    128,                         # Increase number of filters to 128
+    (3, 3),                      # 3x3 kernel size
+    activation='relu',           # ReLU activation function
+    padding='same'               # Keep same spatial dimensions
+))
+complex_model.add(BatchNormalization())  # Batch normalization layer
+complex_model.add(MaxPooling2D(2, 2))    # Max pooling layer
+
+# Fourth convolutional block - detect very complex patterns
+complex_model.add(Conv2D(
+    256,                         # Increase number of filters to 256
+    (3, 3),                      # 3x3 kernel size
+    activation='relu',           # ReLU activation function
+    padding='same'               # Keep same spatial dimensions
+))
+complex_model.add(BatchNormalization())  # Batch normalization layer
+complex_model.add(MaxPooling2D(2, 2))    # Max pooling layer
+
+# Fifth convolutional block - detect most complex features
+complex_model.add(Conv2D(
+    512,                         # Increase number of filters to 512
+    (3, 3),                      # 3x3 kernel size
+    activation='relu',           # ReLU activation function
+    padding='same'               # Keep same spatial dimensions
+))
+complex_model.add(BatchNormalization())  # Batch normalization layer
+complex_model.add(MaxPooling2D(2, 2))    # Final max pooling layer
+
+# Flatten the 2D feature maps into 1D vector for dense layers
+complex_model.add(Flatten())
+
+# Add dropout layer to prevent overfitting before classification layers
+complex_model.add(Dropout(0.5))          # Randomly set 50% of inputs to 0 during training
+
+# First fully connected (dense) layer for feature combination
+complex_model.add(Dense(
+    1024,                        # 1024 neurons in this layer
+    activation='relu'            # ReLU activation function
+))
+
+# Add another dropout layer for additional regularization
+complex_model.add(Dropout(0.3))          # Randomly set 30% of inputs to 0 during training
+
+# Second fully connected layer for further feature processing
+complex_model.add(Dense(
+    512,                         # 512 neurons in this layer
+    activation='relu'            # ReLU activation function
+))
+
+# Add final dropout layer before output
+complex_model.add(Dropout(0.2))          # Randomly set 20% of inputs to 0 during training
+
+# Final output layer for binary classification
+complex_model.add(Dense(
+    1,                           # Single neuron for binary output
+    activation='sigmoid'         # Sigmoid activation for probability output (0-1)
+))
+
+# Compile the model with optimizer, loss function, and metrics
+complex_model.compile(
+    optimizer=Adam(learning_rate=0.0001),  # Adam optimizer with lower learning rate for complex model
+    loss='binary_crossentropy',            # Binary cross-entropy loss for binary classification
+    metrics=['accuracy']                   # Track accuracy during training
+)
