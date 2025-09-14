@@ -66,3 +66,67 @@ val_pics = val_data_prep.flow_from_directory(
     shuffle=False                  # Don't shuffle validation data for consistent evaluation
 )
 
+# Print information about the data generators
+print(f"Training samples: {train_pics.samples}")      # Total number of training images
+print(f"Validation samples: {val_pics.samples}") # Total number of validation images
+print(f"Class indices: {train_pics.class_indices}")   # Mapping of class names to indices
+
+my_model = Sequential()
+
+# First convolutional block
+my_model.add(Conv2D(
+    32,                           # Number of filters (feature detectors)
+    (3, 3),                      # Filter size (3x3 kernel)
+    activation='relu',           # ReLU activation function
+    input_shape=(pic_height, pic_width, color_channels)  # Input image dimensions
+))
+my_model.add(MaxPooling2D(2, 2))    # Max pooling with 2x2 pool size to reduce dimensions
+
+# Second convolutional block
+my_model.add(Conv2D(
+    64,                          # Increase number of filters to 64
+    (3, 3),                      # 3x3 kernel size
+    activation='relu'            # ReLU activation function
+))
+my_model.add(MaxPooling2D(2, 2))    # Max pooling to further reduce dimensions
+
+# Third convolutional block
+my_model.add(Conv2D(
+    128,                         # Increase number of filters to 128
+    (3, 3),                      # 3x3 kernel size
+    activation='relu'            # ReLU activation function
+))
+my_model.add(MaxPooling2D(2, 2))    # Max pooling layer
+
+# Fourth convolutional block
+my_model.add(Conv2D(
+    128,                         # Keep 128 filters
+    (3, 3),                      # 3x3 kernel size
+    activation='relu'            # ReLU activation function
+))
+my_model.add(MaxPooling2D(2, 2))    # Final max pooling layer
+
+# Flatten the 2D feature maps into 1D vector for dense layers
+my_model.add(Flatten())
+
+# Add dropout layer to prevent overfitting
+my_model.add(Dropout(0.5))          # Randomly set 50% of inputs to 0 during training
+
+# First fully connected (dense) layer
+my_model.add(Dense(
+    512,                         # 512 neurons in this layer
+    activation='relu'            # ReLU activation function
+))
+
+# Final output layer for binary classification
+my_model.add(Dense(
+    1,                           # Single neuron for binary output
+    activation='sigmoid'         # Sigmoid activation for probability output (0-1)
+))
+
+# Compile the model with optimizer, loss function, and metrics
+my_model.compile(
+    optimizer=Adam(learning_rate=0.001),  # Adam optimizer with learning rate 0.001
+    loss='binary_crossentropy',           # Binary cross-entropy loss for binary classification
+    metrics=['accuracy']                  # Track accuracy during training
+)
