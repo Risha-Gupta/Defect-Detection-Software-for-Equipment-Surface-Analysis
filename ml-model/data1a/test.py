@@ -31,7 +31,7 @@ color_channels = 3  # Number of color channels (RGB)
 
 batch_count = 32
 
-training_rounds = 15
+training_rounds = 30
 
 num_classes = 2
 
@@ -146,7 +146,7 @@ print(f"Starting training for {training_rounds} epochs...")
 training_log = my_model.fit(
     train_pics,             # Training data generator
     steps_per_epoch=train_batches, # Number of steps per epoch
-    epochs=training_rounds,               # Number of epochs to train
+    epochs=training_rounds,  # Use the training_rounds variable (30 epochs)
     validation_data=val_pics,  # Validation data generator
     validation_steps=val_batches,     # Number of validation steps per epoch
     verbose=1                    # Print progress during training
