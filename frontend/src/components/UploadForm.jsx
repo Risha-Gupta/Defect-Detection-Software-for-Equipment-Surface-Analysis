@@ -11,27 +11,23 @@ function UploadForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!file) return alert("Please select an image first!");
-
+        if (!file) return alert("No image!");
         const formData = new FormData();
         formData.append("file", file);
-
         try {
-        setLoading(true);
-        setResult(null);
-
-        const response = await fetch("http://localhost:8080/predict", {
-            method: "POST",
-            body: formData,
-        });
-
-        const data = await response.json();
-        setResult(data);
+            setLoading(true);
+            setResult(null);
+            const response = await fetch("http://localhost:8080/predict", {
+                method: "POST",
+                body: formData,
+            });
+            const data = await response.json();
+            setResult(data);
         } catch (err) {
-        console.error("Error uploading file:", err);
-        alert("Upload failed");
+            console.error("Error uploading file:", err);
+            alert("Upload failed");
         } finally {
-        setLoading(false);
+            setLoading(false);
         }
     };
 
@@ -39,9 +35,8 @@ function UploadForm() {
         <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="w-full max-w-sm p-6 bg-white border border-gray-200 rounded-lg">
             <h2 className="text-xl font-medium text-gray-800 text-center mb-4">
-            Car Damage Detection
+            Surface Damage Detection
             </h2>
-
             <form onSubmit={handleSubmit} className="space-y-4">
             <input
                 type="file"
