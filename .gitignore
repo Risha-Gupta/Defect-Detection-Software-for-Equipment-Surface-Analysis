@@ -9,10 +9,6 @@ __pycache__/
 .vscode/
 .DS_Store
 
-# Saved Models and Data
-*.h5
-*.keras
-
 # Data Folders (if not using Git LFS)
 data/
 ml-model/data1a/
