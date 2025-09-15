@@ -1,0 +1,17 @@
+# FastAPI framework for building the REST API
+fastapi==0.104.1
+
+# ASGI server for running FastAPI applications with standard features
+uvicorn[standard]==0.24.0
+
+# TensorFlow for loading and running the pre-trained machine learning model
+tensorflow==2.20.0
+
+# Support for handling multipart form data (file uploads)
+python-multipart==0.0.6
+
+# Pillow for image processing and manipulation
+Pillow==10.1.0
+
+# NumPy for numerical operations and array handling
+numpy==1.24.3
