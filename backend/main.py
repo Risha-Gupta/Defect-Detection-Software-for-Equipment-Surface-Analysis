@@ -1,18 +1,27 @@
 # Import FastAPI class for creating the main application instance
 from fastapi import FastAPI
-
+from fastapi.middleware.cors import CORSMiddleware
 # Import the router containing our prediction endpoints
 from routes import router
-
+import os
 # Create the main FastAPI application instance
 app = FastAPI(
     title="Car Damage Classifier API",  # API title shown in documentation
     description="API for predicting car damage from uploaded images",  # API description
     version="1.0.0"  # API version number
 )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Include the routes from routes.py in the main application
 app.include_router(router)
+
+
 
 # Root endpoint that returns a welcome message
 @app.get("/")

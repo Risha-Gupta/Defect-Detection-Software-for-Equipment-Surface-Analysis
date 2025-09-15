@@ -34,7 +34,8 @@ batch_count = 32
 training_rounds = 30
 
 num_classes = 2
-
+script_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(script_dir, "data1a")  
 train_data_prep = ImageDataGenerator(
     rescale=1./255,          # Normalize pixel values from 0-255 to 0-1 range
     rotation_range=20,       # Randomly rotate images up to 20 degrees
@@ -51,7 +52,7 @@ val_data_prep = ImageDataGenerator(
 )
 
 train_pics = train_data_prep.flow_from_directory(
-    'training',                    # Directory containing training subdirectories
+    os.path.join(data_dir, "training"),                   # Directory containing training subdirectories
     target_size=(pic_height, pic_width),  # Resize all images to specified dimensions
     batch_size=batch_count,         # Number of images to load per batch
     class_mode='binary',           # Binary classification (0 or 1)
@@ -59,7 +60,7 @@ train_pics = train_data_prep.flow_from_directory(
 )
 
 val_pics = val_data_prep.flow_from_directory(
-    'validation',                  # Directory containing validation subdirectories
+    os.path.join(data_dir, "validation"),                  # Directory containing validation subdirectories
     target_size=(pic_height, pic_width),  # Resize all images to specified dimensions
     batch_size=batch_count,         # Number of images to load per batch
     class_mode='binary',           # Binary classification (0 or 1)
@@ -155,11 +156,9 @@ training_log = my_model.fit(
 # Print training completion message
 print(f"\nTraining completed after {training_rounds} epochs!")
 
-saved_model_name = 'car_damage_classifier.h5'  # Define filename for saved model
-my_model.save(saved_model_name)                    # Save the entire model (architecture + weights)
+save_path = os.path.join(script_dir, "car_damage_classifier.keras")
+my_model.save(save_path)
 
-# Print confirmation of model saving
-print(f"Model saved as '{saved_model_name}' in the current directory.")
 
 final_train_acc = training_log.history['accuracy'][-1]      # Get last training accuracy
 final_val_acc = training_log.history['val_accuracy'][-1]    # Get last validation accuracy
@@ -168,8 +167,8 @@ print(f"\nFinal Training Accuracy: {final_train_acc:.4f}")
 print(f"Final Validation Accuracy: {final_val_acc:.4f}")
 
 # Print model file information
-if os.path.exists(saved_model_name):          # Check if model file was created successfully
-    file_size = os.path.getsize(saved_model_name) / (1024 * 1024)  # Get file size in MB
+if os.path.exists(save_path):         
+    file_size = os.path.getsize(save_path) / (1024 * 1024)  # Get file size in MB
     print(f"Model file size: {file_size:.2f} MB")
     print("Model is ready for use!")
 else:

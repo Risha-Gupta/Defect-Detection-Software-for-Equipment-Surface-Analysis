@@ -19,8 +19,9 @@ from tensorflow.keras.optimizers import Adam
 # Import OS module for file path operations
 import os
 
-# Print TensorFlow version to verify installation
-print(f"TensorFlow version: {tf.__version__}")
+# Import OpenCV for image processing and Canny edge detection
+import cv2
+import numpy as np
 
 # Set random seed for reproducible results
 tf.random.set_seed(42)
@@ -34,8 +35,29 @@ color_channels = 3  # Number of color channels (RGB)
 batch_count = 32  # Number of images processed in each batch
 training_rounds = 30  # Number of epochs to train the model
 num_classes = 2  # Binary classification (2 classes)
+script_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = os.path.join(script_dir, "data1a")  
 
-# Create data generator for training images with augmentation
+# Simple Canny edge preprocessing function
+def canny_preprocess(img):
+    # Convert to grayscale for edge detection
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    
+    # Apply Canny edge detection
+    edges = cv2.Canny(gray, 50, 150)
+    
+    # Convert edges back to 3 channels
+    edges_3ch = cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB)
+    
+    # Combine original image with edges
+    img = img.astype(float)
+    edges_3ch = edges_3ch.astype(float)
+    enhanced = img + edges_3ch * 0.3  # 30% edge overlay
+    
+    # Normalize to 0-1 range
+    return np.clip(enhanced / 255.0, 0, 1)
+
+# Create data generator for training images with augmentation and Canny preprocessing
 train_data_prep = ImageDataGenerator(
     rescale=1./255,          # Normalize pixel values from 0-255 to 0-1 range
     rotation_range=25,       # Randomly rotate images up to 25 degrees
@@ -45,17 +67,19 @@ train_data_prep = ImageDataGenerator(
     zoom_range=0.2,          # Randomly zoom into images by up to 20%
     horizontal_flip=True,    # Randomly flip images horizontally
     brightness_range=[0.8, 1.2],  # Randomly adjust brightness
-    fill_mode='nearest'      # Fill pixels after transformations using nearest neighbor
+    fill_mode='nearest',     # Fill pixels after transformations using nearest neighbor
+    preprocessing_function=lambda x: canny_preprocess((x * 255).astype(np.uint8))  # Apply Canny preprocessing
 )
 
-# Create data generator for validation images (no augmentation)
+# Create data generator for validation images with Canny preprocessing (no augmentation)
 val_data_prep = ImageDataGenerator(
-    rescale=1./255           # Only normalize pixel values, no augmentation for validation
+    rescale=1./255,          # Only normalize pixel values, no augmentation for validation
+    preprocessing_function=lambda x: canny_preprocess((x * 255).astype(np.uint8))  # Apply Canny preprocessing
 )
 
 # Load training images from directory structure
 train_pics = train_data_prep.flow_from_directory(
-    'training',                    # Directory containing training subdirectories
+    os.path.join(data_dir, "training"),                  # Directory containing training subdirectories
     target_size=(pic_height, pic_width),  # Resize all images to specified dimensions
     batch_size=batch_count,         # Number of images to load per batch
     class_mode='binary',           # Binary classification (0 or 1)
@@ -64,7 +88,7 @@ train_pics = train_data_prep.flow_from_directory(
 
 # Load validation images from directory structure
 val_pics = val_data_prep.flow_from_directory(
-    'validation',                  # Directory containing validation subdirectories
+    os.path.join(data_dir, "validation"),                # Directory containing validation subdirectories
     target_size=(pic_height, pic_width),  # Resize all images to specified dimensions
     batch_size=batch_count,         # Number of images to load per batch
     class_mode='binary',           # Binary classification (0 or 1)
@@ -75,7 +99,7 @@ val_pics = val_data_prep.flow_from_directory(
 print(f"Training samples: {train_pics.samples}")      # Total number of training images
 print(f"Validation samples: {val_pics.samples}")     # Total number of validation images
 print(f"Class indices: {train_pics.class_indices}")   # Mapping of class names to indices
-
+print("Note: All images will be enhanced with Canny edge detection")
 
 # Create a Sequential model (layers stacked one after another)
 complex_model = Sequential()
@@ -168,9 +192,8 @@ complex_model.compile(
     metrics=['accuracy']                   # Track accuracy during training
 )
 
-
 # Print detailed model architecture summary
-print("\nComplex Model Architecture:")
+print("\nComplex Model with Canny Edge Enhancement Architecture:")
 complex_model.summary()                          # Display detailed model structure
 
 # Calculate number of training and validation steps per epoch
@@ -180,7 +203,7 @@ val_batches = val_pics.samples // batch_count          # Number of batches per v
 # Print training configuration information
 print(f"\nTraining steps per epoch: {train_batches}")
 print(f"Validation steps per epoch: {val_batches}")
-print(f"Starting training for {training_rounds} epochs...")
+print(f"Starting training for {training_rounds} epochs with Canny edge enhancement...")
 
 # Train the complex model
 training_log = complex_model.fit(
@@ -195,12 +218,8 @@ training_log = complex_model.fit(
 # Print training completion message
 print(f"\nTraining completed after {training_rounds} epochs!")
 
-# Define filename and save the trained model
-saved_model_name = 'complex_cnn.h5'  # Define filename for saved model
-complex_model.save(saved_model_name)  # Save the entire model (architecture + weights)
-
-# Print confirmation of model saving
-print(f"Complex model saved as '{saved_model_name}' in the current directory.")
+save_path = os.path.join(script_dir, "complex_cnn_canny.keras")
+complex_model.save(save_path)
 
 # Extract and display final training metrics
 final_train_acc = training_log.history['accuracy'][-1]      # Get last training accuracy
@@ -211,9 +230,8 @@ print(f"\nFinal Training Accuracy: {final_train_acc:.4f}")
 print(f"Final Validation Accuracy: {final_val_acc:.4f}")
 
 # Verify model file creation and display file information
-if os.path.exists(saved_model_name):          # Check if model file was created successfully
-    file_size = os.path.getsize(saved_model_name) / (1024 * 1024)  # Get file size in MB
-    print(f"Model file size: {file_size:.2f} MB")
-    print("Complex CNN model is ready for use!")
+if os.path.exists(save_path):          
+    file_size = os.path.getsize(save_path) / (1024 * 1024) 
+    print(f"Enhanced model file size: {file_size:.2f} MB")
 else:
     print("Error: Model file was not created successfully.")
