@@ -70,4 +70,55 @@ def preprocess_image(image_bytes):
         # Raise HTTP exception for image processing errors
         raise HTTPException(status_code=400, detail=f"Error processing image: {str(e)}")
 
-
+# API endpoint for car damage prediction
+@router.post("/predict")
+async def predict_damage(file: UploadFile = File(...)):
+    # Check if a file was actually uploaded
+    if not file:
+        # Return error if no file provided
+        raise HTTPException(status_code=400, detail="No file uploaded")
+    
+    # Check if uploaded file is an image by examining content type
+    if not file.content_type.startswith('image/'):
+        # Return error if file is not an image
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    try:
+        # Read the uploaded file content as bytes
+        image_bytes = await file.read()
+        
+        # Load the pre-trained model (loads once, then reuses)
+        current_model = load_model()
+        
+        # Preprocess the uploaded image for model input
+        processed_image = preprocess_image(image_bytes)
+        
+        # Make prediction using the loaded model
+        prediction = current_model.predict(processed_image)
+        
+        # Extract prediction probability (sigmoid output between 0 and 1)
+        prediction_prob = float(prediction[0][0])
+        
+        # Convert probability to binary classification (threshold at 0.5)
+        if prediction_prob > 0.5:
+            # High probability indicates damage
+            result = "Damaged"
+            # Calculate confidence as percentage above 50%
+            confidence = prediction_prob * 100
+        else:
+            # Low probability indicates no damage
+            result = "Not Damaged"
+            # Calculate confidence as percentage below 50% (inverted)
+            confidence = (1 - prediction_prob) * 100
+        
+        # Return JSON response with prediction results
+        return {
+            "prediction": result,  # Classification result
+            "confidence": round(confidence, 2),  # Confidence percentage rounded to 2 decimals
+            "raw_probability": round(prediction_prob, 4),  # Raw model output
+            "filename": file.filename  # Original filename for reference
+        }
+        
+    except Exception as e:  # Handle any unexpected errors during prediction
+        # Return server error with details
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
