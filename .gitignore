@@ -1,0 +1,22 @@
+# Python Virtual Environment
+venv/
+__pycache__/
+
+# Compiled Python files
+*.pyc
+
+# IDE and OS files
+.vscode/
+.DS_Store
+
+# Saved Models and Data
+*.h5
+*.keras
+
+# Data Folders (if not using Git LFS)
+data/
+ml-model/data1a/
+
+# Logs and temporary files
+*.log
+.ipynb_checkpoints/
