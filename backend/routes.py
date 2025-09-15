@@ -42,3 +42,32 @@ def load_model():
     # Return the loaded model
     return model
 
+# Function to preprocess uploaded image for model prediction
+def preprocess_image(image_bytes):
+    try:
+        # Open the image from bytes using PIL
+        img = Image.open(io.BytesIO(image_bytes))
+        
+        # Convert image to RGB format (removes alpha channel if present)
+        img = img.convert('RGB')
+        
+        # Resize image to 150x150 pixels as required by the model
+        img = img.resize((150, 150))
+        
+        # Convert PIL image to NumPy array
+        img_array = np.array(img)
+        
+        # Normalize pixel values from 0-255 range to 0-1 range
+        img_array = img_array.astype('float32') / 255.0
+        
+        # Add batch dimension (model expects shape: (batch_size, height, width, channels))
+        img_array = np.expand_dims(img_array, axis=0)
+        
+        # Return the preprocessed image array
+        return img_array
+        
+    except Exception as e:  # Handle any errors during image preprocessing
+        # Raise HTTP exception for image processing errors
+        raise HTTPException(status_code=400, detail=f"Error processing image: {str(e)}")
+
+
