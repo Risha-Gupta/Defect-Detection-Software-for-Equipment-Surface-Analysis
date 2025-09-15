@@ -27,7 +27,8 @@ def load_model():
     global model  # Access the global model variable
     if model is None:  # Check if model hasn't been loaded yet
         # Construct the path to the model file (going up one directory to ml-model folder)
-        model_path = os.path.join("..", "ml-model", "car_damage_classifier.h5")
+        #model_path = os.path.join("..", "ml-model", "car_damage_classifier.h5")
+        model_path = os.path.join("..", "ml-model", "data1a", "car_damage_classifier.h5")
         try:
             # Load the pre-trained Keras model from the .h5 file
             model = tf.keras.models.load_model(model_path)
