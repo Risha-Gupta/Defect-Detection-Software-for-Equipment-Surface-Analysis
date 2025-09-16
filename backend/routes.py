@@ -32,7 +32,7 @@ def load_model(model_name):
         if model_name == "simple_cnn":
             model_path = os.path.join(script_dir,"..", "ml-model", "car_damage_classifier.keras")
         elif model_name == "complex_cnn":
-            model_path = os.path.join(script_dir,"..", "ml-model", "complex_cnn.keras")
+            model_path = os.path.join(script_dir,"..", "ml-model", "complex_cnn_canny.keras")
         elif model_name == "mobilenet_v2":
             model_path = os.path.join(script_dir,"..", "ml-model", "mobilenetv2_damage_classifier.keras")
         else:
@@ -41,7 +41,7 @@ def load_model(model_name):
         try:
             # Load the model
             models[model_name] = tf.keras.models.load_model(model_path, compile=False)
-            print(f"Model '{model_name}' loaded successfully")
+            print(f"Model '{model_name}' loaded successfully from {model_path}")
         except Exception as e:
             print(f"Error loading model '{model_name}': {str(e)}")
             raise HTTPException(status_code=500, detail=f"Failed to load model: {str(e)}")
